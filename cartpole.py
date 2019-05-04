@@ -109,18 +109,6 @@ def run_episode( env):
 
         episode_return += reward
         ep_rewards.append(reward)
-
-
-
-        # random policy
-        #action = 0 if random.uniform(0,1) < 0.5 else 1
-        
-        #observation, reward, done, info = env.step(action)
-        
-        #episode_return += reward
-
-        # disable rendering for faster training
-        #env.render()
         
         if done:
             print("Episode ended early Length:{}".format(_+1))
