@@ -8,12 +8,12 @@ import gym
 #g_env.render()
 
 import tensorflow as tf
-import random
+import collections
 import matplotlib.pyplot as plt
 import numpy as np
 
-num_training_episodes = 1000
-episode_length = 200
+num_training_episodes = 1500
+episode_length = 300
 
 class REINFORCE():
     def __init__(
@@ -21,8 +21,8 @@ class REINFORCE():
             n_states,
             n_hidden,
             n_actions,
-            learning_rate=1e-3,
-            discount_rate=0.99
+            learning_rate=1e-2,
+            discount_rate=0.95
             ):
 
         self.n_states = n_states
@@ -99,7 +99,7 @@ def run_episode( env):
 
     for _ in range( episode_length ):
 
-        state = observation
+        state = observation[2:]
 
         action = RL.choose_action(state)
         ep_states.append(state)
@@ -111,8 +111,8 @@ def run_episode( env):
         ep_rewards.append(reward)
         
         if done:
-            print("Episode ended early Length:{}".format(_+1))
-            print("Episode return: {}".format(episode_return))
+            #print("Episode ended early Length:{}".format(_+1))
+            #print("Episode return: {}".format(episode_return))
 
             discounted_reward = RL.discount_rewards(ep_rewards)
 
@@ -128,12 +128,12 @@ def run_episode( env):
 env = gym.make('CartPole-v0')
 #env.render()
 monitor = gym.wrappers.Monitor(env, 'cartpole/', force=True)
-rewards = []
+rewards = collections.deque(maxlen=100)
 #sess = tf.InteractiveSession()
 #sess.run(tf.initialize_all_variables())
 
 RL = REINFORCE(
-        n_states=env.observation_space.shape[0],
+        n_states=env.observation_space.shape[0]-2,
         n_hidden=20,
         n_actions=env.action_space.n
         )
@@ -141,8 +141,14 @@ RL = REINFORCE(
 for i in range( num_training_episodes ):
     
     episode_return = run_episode( env)
-    print("****episode no.{} return:**** %f".format(i) % (episode_return,))
+    print("Episode No. {} - Return: {}".format(i, episode_return))
     rewards.append(episode_return)
+    avg_rewards = np.mean(rewards)
+
+    if(avg_rewards >= 195 and i>=100):
+        print("Solved after {} episodes.".format(i))
+        break
+
 
 
 plt.plot(rewards)
